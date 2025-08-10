@@ -1,0 +1,10 @@
+# Virtual Environment
+cnn_venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+bin/
+lib/
+include/
