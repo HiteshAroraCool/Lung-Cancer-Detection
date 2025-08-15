@@ -1,5 +1,7 @@
 # Virtual Environment
 cnn_venv/
+sample_project.egg-info/
+dataset/
 .vscode/
 __pycache__/
 *.pyc
@@ -9,3 +11,4 @@ __pycache__/
 bin/
 lib/
 include/
+temp.ipynb
