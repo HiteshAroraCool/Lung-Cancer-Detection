@@ -12,3 +12,4 @@ bin/
 lib/
 include/
 temp.ipynb
+logs/
