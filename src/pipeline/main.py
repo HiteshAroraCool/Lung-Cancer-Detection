@@ -1,56 +1,23 @@
 ## File to Download Dataset(https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345) in batches.
 
 import os
-import tarfile
-import shutil
 from pathlib import Path
-from tqdm import tqdm
-import pandas as pd
 from src.exception import CustomException
 from src.logger import logging
 import sys
-import requests
+from src.components.data_transformations import DataTransformations
+from src.components.functions import DatasetUtils
 
-# ====== FUNCTIONS ======
-
-def download_file(url, save_path):
-    # Stream download
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        total_size = int(r.headers.get('content-length', 0))
-        block_size = 1024  # 1 KB chunks
-        with tqdm(total=total_size, unit='B', unit_scale=True, desc=save_path) as pbar:
-            with open(save_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=block_size):
-                    if chunk:  # filter out keep-alive chunks
-                        f.write(chunk)
-                        pbar.update(len(chunk))
-
-def extract_tar_gz(tar_path, extract_to):
-    logging.info(f"Extracting {tar_path} ...")
-    with tarfile.open(tar_path, "r:gz") as tar:
-        members = tar.getmembers()
-        for member in tqdm(members, desc=f"Extracting {os.path.basename(tar_path)}", unit="file"):
-            tar.extract(member, path=extract_to)
-
-def cleanup_files(paths):
-    for p in paths:
-        if os.path.isdir(p):
-            shutil.rmtree(p)
-        elif os.path.isfile(p):
-            os.remove(p)
-        logging.info(f"{p} Sucessfully Removed")
 
 # ====== MAIN ======
 if __name__ == "__main__":
 
-    # ====== CONFIG ======
-    try:
-        META_CSV = os.path.join("dataset", "Data_Entry_2017_v2020.csv")
-        # Load NIH metadata CSV
-        meta_df = pd.read_csv(META_CSV)
-        logging.info("Meta Dataset Loaded Successfully")
+    # call data transformations to get train, test, all labels
+    get_dataset = DataTransformations()
+    train, test, all_labels = get_dataset.load_metadata_file(os.path.join("dataset", "Data_Entry_2017_v2020.csv"))
 
+    # ====== Batch Rotation ======
+    try:
         BATCH_SIZE = 1
         EXTRACT_DIR = Path("nih_images")
         LINKS = [
@@ -79,20 +46,19 @@ if __name__ == "__main__":
                 # Download batch
                 for idx, link in enumerate(batch_links):
                     filename = f"images_{batch_start+idx+1:02d}.tar.gz"
-                    download_file(link, filename)
+                    DatasetUtils.download_file(link, filename)
                     batch_files.append(filename)
 
                 # Extract batch
                 for tar_file in batch_files:
-                    extract_tar_gz(tar_file, EXTRACT_DIR)
-
+                    DatasetUtils.extract_tar_gz(tar_file, EXTRACT_DIR)
                 logging.info(f"Batch {batch_start//BATCH_SIZE + 1} ready in {EXTRACT_DIR}")
 
-                ## training here with try:
+                ## training here with try: call train pipeline file
 
                 # Cleanup batch
-                cleanup_files(batch_files)      # remove tar.gz
-                cleanup_files([EXTRACT_DIR])    # remove extracted images
+                DatasetUtils.cleanup_files(batch_files)      # remove tar.gz
+                DatasetUtils.cleanup_files([EXTRACT_DIR])    # remove extracted images
                 logging.info(f"Batch {batch_start//BATCH_SIZE + 1} cleaned up.")
 
             except Exception as e:
