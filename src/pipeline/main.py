@@ -13,8 +13,8 @@ from src.components.functions import DatasetUtils
 if __name__ == "__main__":
 
     # Call data transformations to get train, test, all labels
-    get_dataset = DataTransformations()
-    train, test, all_labels = get_dataset.load_metadata_file(os.path.join("dataset", "Data_Entry_2017_v2020.csv"))
+    transformer = DataTransformations(meta_csv_path=os.path.join("dataset", "Data_Entry_2017_v2020.csv"))
+    train, test, labels = transformer.process_pipeline()
 
     # ====== Batch Rotation ======
     try:
