@@ -11,7 +11,6 @@ from pathlib import Path
 class DatasetUtils:
     """Utility class for handling dataset operations like download, extraction, and cleanup."""
 
-    # ====== FUNCTIONS ======
     @staticmethod
     def download_file(url: str, save_path: Union[str, Path], chunk_size: int = 1024) -> None:
         """
