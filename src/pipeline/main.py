@@ -1,26 +1,30 @@
-## File to Download Dataset(https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345) in batches.
-
+from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import List, Dict, Any
+import pandas as pd
 from src.exception import CustomException
 from src.logger import logging
 import sys
 from src.components.data_transformations import DataTransformations
+from src.components.data_ingestion import DataIngestionPipeline
 from src.components.utils import DatasetUtils
+from src.components.model_trainer import ModelTrainer
 
 
-# ====== MAIN ======
-if __name__ == "__main__":
+@dataclass
+class PipelineConfig:
+    """Configuration for data pipeline"""
+    batch_size: int = 1
+    extract_dir: Path = Path("nih_images")
+    meta_csv_path: Path = Path("dataset") / "Data_Entry_2017_v2020.csv"
+    img_size: tuple = (128, 128)
+    train_batch_size: int = 32
+    epochs: int = 5
+    links: List[str] = None
 
-    # Call data transformations to get train, test, all labels
-    transformer = DataTransformations(meta_csv_path=os.path.join("dataset", "Data_Entry_2017_v2020.csv"))
-    train, test, labels = transformer.process_pipeline()
-
-    # ====== Batch Rotation ======
-    try:
-        BATCH_SIZE = 1
-        EXTRACT_DIR = Path("nih_images")
-        LINKS = [
+    def __post_init__(self):
+        self.links = [
             'https://nihcc.box.com/shared/static/vfk49d74nhbxq3nqjg0900w5nvkorp5c.gz',
             # 'https://nihcc.box.com/shared/static/i28rlmbvmfjbl8p2n3ril0pptcmcu9d1.gz',
             # 'https://nihcc.box.com/shared/static/f1t00wrtdk94satdfb9olcolqx20z2jp.gz',
@@ -35,38 +39,106 @@ if __name__ == "__main__":
             # 'https://nihcc.box.com/shared/static/ioqwiy20ihqwyr8pf4c24eazhh281pbu.gz'
         ]
 
-        # Create directory for downloads
-        os.makedirs(EXTRACT_DIR, exist_ok=True)
 
-        for batch_start in range(0, len(LINKS), BATCH_SIZE):
-            try:
-                batch_links = LINKS[batch_start:batch_start + BATCH_SIZE]
-                batch_files = []
+class DataPipeline:
+    """Main pipeline for handling data processing and model training"""
+    
+    def __init__(self, config: PipelineConfig):
+        """Initialize pipeline with configuration"""
+        self.config = config
+        self.transformer = DataTransformations(
+            meta_csv_path=str(config.meta_csv_path)
+        )
+        self.ingestion = DataIngestionPipeline(
+            img_size=config.img_size,
+            batch_size=config.train_batch_size
+        )
+        self.model_trainer = ModelTrainer(
+            img_size=config.img_size,
+            epochs=config.epochs
+        )
+        
+    def process_batch(self, 
+                     batch_start: int, 
+                     train_df: pd.DataFrame, 
+                     test_df: pd.DataFrame, 
+                     labels: List[str]) -> None:
+        """Process a single batch of data"""
+        try:
+            batch_links = self.config.links[batch_start:batch_start + self.config.batch_size]
+            batch_files = []
+            batch_num = batch_start//self.config.batch_size + 1
 
-                # Download batch
-                for idx, link in enumerate(batch_links):
-                    filename = f"images_{batch_start+idx+1:02d}.tar.gz"
-                    DatasetUtils.download_file(link, filename)
-                    batch_files.append(filename)
+            # Download batch
+            for idx, link in enumerate(batch_links):
+                filename = f"images_{batch_start+idx+1:02d}.tar.gz"
+                DatasetUtils.download_file(link, filename)
+                batch_files.append(filename)
 
-                # Extract batch
-                for tar_file in batch_files:
-                    DatasetUtils.extract_tar_gz(tar_file, EXTRACT_DIR)
-                logging.info(f"Batch {batch_start//BATCH_SIZE + 1} ready in {EXTRACT_DIR}")
+            # Extract batch
+            for tar_file in batch_files:
+                DatasetUtils.extract_tar_gz(tar_file, self.config.extract_dir)
+            logging.info(f"Batch {batch_num} extracted to {self.config.extract_dir}")
 
-                ## training here with try: call train pipeline file
+            # Create generators for current batch
+            generators = self.ingestion.create_generators(
+                train_df=train_df,
+                test_df=test_df,
+                image_dir=self.config.extract_dir,
+                batch_num=batch_num,
+                labels=labels
+            )
 
-                # Cleanup batch
-                DatasetUtils.cleanup_files(batch_files)      # remove tar.gz
-                DatasetUtils.cleanup_files([EXTRACT_DIR])    # remove extracted images
-                logging.info(f"Batch {batch_start//BATCH_SIZE + 1} cleaned up.")
+            if generators:
+                # Train model on current batch
+                self.model_trainer.train_batch(
+                    generators['train_generator'],
+                    generators['valid_generator'],
+                    batch_num
+                )
 
-            except Exception as e:
-                logging.error(f"Error processing batch {batch_start//BATCH_SIZE + 1}")
-                raise CustomException(e, sys)
+            # Cleanup batch
+            DatasetUtils.cleanup_files(batch_files)
+            DatasetUtils.cleanup_files([self.config.extract_dir])
+            logging.info(f"Batch {batch_num} processed and cleaned up")
 
-        logging.info("All batches processed successfully.")
+        except Exception as e:
+            logging.error(f"Error processing batch {batch_num}")
+            raise CustomException(e, sys)
+
+    def run(self) -> None:
+        """Execute the complete pipeline"""
+        try:
+            # Process metadata
+            train_df, test_df, labels = self.transformer.process_pipeline()
+            logging.info("Metadata processed successfully")
+
+            # Create extraction directory
+            os.makedirs(self.config.extract_dir, exist_ok=True)
+
+            # Process batches
+            for batch_start in range(0, len(self.config.links), self.config.batch_size):
+                self.process_batch(batch_start, train_df, test_df, labels)
+
+            # Save final model
+            self.model_trainer.save_model()
+            logging.info("Pipeline completed successfully")
+
+        except Exception as e:
+            logging.error("Pipeline failed")
+            raise CustomException(e, sys)
+
+def main():
+    """Main entry point"""
+    try:
+        # Initialize and run pipeline
+        config = PipelineConfig()
+        pipeline = DataPipeline(config)
+        pipeline.run()
 
     except Exception as e:
-        logging.error("Failed to process dataset")
+        logging.error("Failed to execute pipeline")
         raise CustomException(e, sys)
+
+if __name__ == "__main__":
+    main()
