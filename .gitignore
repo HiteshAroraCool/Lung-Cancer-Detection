@@ -13,3 +13,5 @@ lib/
 include/
 temp.ipynb
 logs/
+artifacts/
+checkpoints/
