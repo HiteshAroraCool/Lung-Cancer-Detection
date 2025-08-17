@@ -93,7 +93,7 @@ class ModelTrainer:
             logging.error(f"Failed training on batch {batch_num}")
             raise CustomException(e, sys)
 
-    def save_model(self, path: str = "artifacts/final_model.h5"):
+    def save_model(self, path: str = "artifacts/final_model.keras"):
         """Save the final model after all batches."""
         try:
             os.makedirs(os.path.dirname(path), exist_ok=True)
