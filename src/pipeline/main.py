@@ -6,7 +6,7 @@ from src.exception import CustomException
 from src.logger import logging
 import sys
 from src.components.data_transformations import DataTransformations
-from src.components.functions import DatasetUtils
+from src.components.utils import DatasetUtils
 
 
 # ====== MAIN ======
