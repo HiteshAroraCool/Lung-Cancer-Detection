@@ -7,6 +7,7 @@ import shutil
 from tqdm import tqdm
 from typing import List, Union
 from pathlib import Path
+import os
 
 class DatasetUtils:
     """Utility class for handling dataset operations like download, extraction, and cleanup."""
@@ -21,21 +22,24 @@ class DatasetUtils:
             save_path: Destination path
             chunk_size: Size of chunks to download
         """
-        try:
-            with requests.get(url, stream=True) as response:
-                response.raise_for_status()
-                total_size = int(response.headers.get('content-length', 0))
-                
-                with (tqdm(total=total_size, unit='B', unit_scale=True, desc=str(save_path)) as pbar,
-                      open(save_path, 'wb') as file):
-                    for chunk in response.iter_content(chunk_size=chunk_size):
-                        if chunk:
-                            file.write(chunk)
-                            pbar.update(len(chunk))
-            logging.info(f"Successfully downloaded: {save_path}")
-        except Exception as e:
-            logging.error(f"Failed to download file: {url}")
-            raise CustomException(e, sys)
+        if not os.path.exists(save_path):
+            try:
+                with requests.get(url, stream=True) as response:
+                    response.raise_for_status()
+                    total_size = int(response.headers.get('content-length', 0))
+                    
+                    with (tqdm(total=total_size, unit='B', unit_scale=True, desc=str(save_path)) as pbar,
+                        open(save_path, 'wb') as file):
+                        for chunk in response.iter_content(chunk_size=chunk_size):
+                            if chunk:
+                                file.write(chunk)
+                                pbar.update(len(chunk))
+                logging.info(f"Successfully downloaded: {save_path}")
+            except Exception as e:
+                logging.error(f"Failed to download file: {url}")
+                raise CustomException(e, sys)
+        else:
+            logging.info(f"Skipping download, {save_path} already exists")
         
     @staticmethod
     def extract_tar_gz(tar_path: Union[str, Path], extract_to: Union[str, Path]) -> None:
