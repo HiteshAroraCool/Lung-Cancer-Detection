@@ -34,7 +34,7 @@ class DataIngestionPipeline:
         """Update image paths for the current batch."""
         try:
             # Filter dataframe for current batch images
-            batch_images = list(image_dir.glob('*.png'))  # or whatever extension
+            batch_images = list(image_dir.glob('*.png'))  #  extension
             image_names = {img.name for img in batch_images}
             
             # Update paths only for images present in the current batch

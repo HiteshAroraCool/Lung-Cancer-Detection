@@ -16,7 +16,7 @@ from src.components.model_trainer import ModelTrainer
 class PipelineConfig:
     """Configuration for data pipeline"""
     batch_size: int = 1
-    extract_dir: Path = Path("nih_images")
+    extract_dir: Path = Path("nih_images") / "images"
     meta_csv_path: Path = Path("dataset") / "Data_Entry_2017_v2020.csv"
     img_size: tuple = (128, 128)
     train_batch_size: int = 32
