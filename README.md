@@ -9,7 +9,7 @@ A deep learning project for detecting and classifying lung cancer from CT scan i
 
 ## Project Overview
 
-This project implements a multi-class lung cancer detection system using deep learning techniques, based on the [Lung Cancer Detection dataset from Kaggle](https://www.kaggle.com/code/bcscuwe1/lung-cancer-detection-muilt-classification).
+This project implements a multi-class lung cancer detection system using deep learning techniques.
 
 ## Features
 
@@ -90,6 +90,4 @@ Contributions are welcome! Please feel free to submit pull requests or create is
 
 ## Acknowledgments
 
-- Original Kaggle notebook by bcscuwe1
 - NIH for the dataset
-- Contributors and maintainers
