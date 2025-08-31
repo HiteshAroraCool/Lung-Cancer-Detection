@@ -1,6 +1,9 @@
 # Lung Cancer Detection
 
-![Lung Cancer Detection Demo](Running.mp4)
+<video width="100%" controls>
+  <source src="Running.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 A deep learning project for detecting and classifying lung cancer from CT scan images using MobileNet architecture.
 
