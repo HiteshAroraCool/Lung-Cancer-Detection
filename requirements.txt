@@ -1,4 +1,4 @@
-# Core
+# Core ML and Data Science
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.5.2
@@ -7,21 +7,39 @@ matplotlib==3.9.2
 seaborn==0.13.2
 tqdm==4.66.5
 
-# TensorFlow (LTS stable release)
+# Deep Learning Framework
 tensorflow==2.15.1
+tensorflow-intel==2.15.1
 keras==2.15.0
 tensorboard==2.15.2
+tensorflow-estimator==2.15.0
+tensorflow-io-gcs-filesystem==0.31.0
 
-# Image processing
+# Image Processing
 opencv-python==4.10.0.84
 pillow==10.4.0
 
-# Experiment tracking (optional)
+# Experiment Tracking and MLOps
 mlflow==2.16.0
+mlflow-skinny==2.16.0
+databricks-sdk==0.63.0
 
-# Utility
+# Development and Debugging
+debugpy==1.8.11
+ipykernel==6.29.5
+jupyter_client==8.6.3
+jupyter_core==5.8.1
+
+# Web Framework and API
+flask==3.1.1
+waitress==3.0.2
+werkzeug==3.1.3
+
+# Utilities
 typing-extensions==4.12.2
 protobuf==4.25.3
 h5py==3.11.0
-
--e .
+pyyaml==6.0.2
+psutil==5.9.0
+pyarrow==17.0.0
+graphql-core==3.2.6

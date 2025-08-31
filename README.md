@@ -1,5 +1,7 @@
 # Lung Cancer Detection
 
+![Lung Cancer Detection Demo]()
+
 A deep learning project for detecting and classifying lung cancer from CT scan images using MobileNet architecture.
 
 ## Project Overview
@@ -16,6 +18,8 @@ This project implements a multi-class lung cancer detection system using deep le
   - Early stopping
   - Model checkpointing
 - Detailed performance visualization
+- Model artifacts saving and loading
+- Prediction pipeline for easy inference
 
 ## Requirements
 
@@ -34,7 +38,7 @@ This project implements a multi-class lung cancer detection system using deep le
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Lung-Cancer-Detection.git
+git clone https://github.com/HiteshAroraCool/Lung-Cancer-Detection.git
 cd Lung-Cancer-Detection
 ```
 
@@ -60,11 +64,17 @@ The model uses MobileNet as the base architecture with additional layers:
 
 ```
 Lung-Cancer-Detection/
-├── requirements.txt    # Project dependencies
-├── setup.py           # Package setup configuration
-├── .gitignore         # Git ignore rules
-└── src/              # Source code directory
-    └── model.py      # Model implementation
+├── README.md          # Project documentation
+├── requirements.txt   # Project dependencies
+├── artifacts/        # Saved model files
+│   └── final_model.keras  # Trained model
+├── checkpoints/      # Training checkpoints
+│   └── best_model.weights.h5
+├── dataset/         # Dataset directory
+├── logs/           # Training logs
+├── src/            # Source code directory
+│   └── pipeline/   # Training and prediction pipelines
+└── notebooks/      # Jupyter notebooks for experimentation
 ```
 
 ## License

@@ -16,7 +16,7 @@ from src.components.model_trainer import ModelTrainer
 class PipelineConfig:
     """Configuration for data pipeline"""
     batch_size: int = 1
-    extract_dir: Path = Path("nih_images") / "images"
+    extract_dir: Path = Path("nih_images")
     meta_csv_path: Path = Path("dataset") / "Data_Entry_2017_v2020.csv"
     img_size: tuple = (128, 128)
     train_batch_size: int = 32
@@ -84,7 +84,7 @@ class DataPipeline:
             generators = self.ingestion.create_generators(
                 train_df=train_df,
                 test_df=test_df,
-                image_dir=self.config.extract_dir,
+                image_dir=self.config.extract_dir / "images",
                 batch_num=batch_num,
                 labels=labels
             )
