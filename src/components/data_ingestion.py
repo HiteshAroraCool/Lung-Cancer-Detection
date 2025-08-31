@@ -106,3 +106,17 @@ class DataIngestionPipeline:
         except Exception as e:
             logging.error(f"Failed to create generators for batch {batch_num}")
             raise CustomException(e, sys)
+
+if __name__ == "__main__":
+    train_df = pd.read_csv("./dataset/Data_Entry_2017_v2020.csv")[:100]
+    test_df = pd.read_csv("./dataset/Data_Entry_2017_v2020.csv")[100:200]
+    labels = train_df['Finding Labels'].str.split('|').explode().unique().tolist()
+    labels = [l for l in labels if l]  # remove empty strings
+
+    generators = DataIngestionPipeline().create_generators(
+                train_df=train_df,
+                test_df=test_df,
+                image_dir=Path("nih_images/images"),
+                batch_num=1,
+                labels=labels
+            )
