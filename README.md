@@ -1,6 +1,6 @@
 # Lung Cancer Detection
 
-https://github.com/HiteshAroraCool/Lung-Cancer-Detection/assets/Running.mp4
+https://github.com/HiteshAroraCool/Lung-Cancer-Detection/Running.mp4
 
 A deep learning project for detecting and classifying lung cancer from CT scan images using MobileNet architecture.
 
